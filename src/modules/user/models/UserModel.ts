@@ -49,9 +49,9 @@ const metadataSchema = new Schema<User["metadata"]>(
 
 export const userSchema = new Schema<User, UserModelType>({
   profile: { type: profileSchema, required: true },
-  preferences: { type: preferencesSchema, required: true },
-  flags: { type: flagsSchema, required: true },
-  metadata: { type: metadataSchema, required: true },
+  preferences: { type: preferencesSchema, required: true, default: {} },
+  flags: { type: flagsSchema, required: true, default: {} },
+  metadata: { type: metadataSchema, required: true, default: {} },
 });
 
 export const UserModel = model<User, UserModelType>("User", userSchema);

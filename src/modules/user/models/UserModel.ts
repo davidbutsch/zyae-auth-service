@@ -47,11 +47,22 @@ const metadataSchema = new Schema<User["metadata"]>(
   { _id: false }
 );
 
+const securitySchema = new Schema<User["security"]>(
+  {
+    password: { type: String, default: null },
+  },
+  { _id: false }
+);
+
 export const userSchema = new Schema<User, UserModelType>({
+  // base user properties
   profile: { type: profileSchema, required: true },
   preferences: { type: preferencesSchema, required: true, default: {} },
   flags: { type: flagsSchema, required: true, default: {} },
   metadata: { type: metadataSchema, required: true, default: {} },
+
+  // local properties
+  security: { type: securitySchema, required: true, default: {} },
 });
 
 export const UserModel = model<User, UserModelType>("User", userSchema);

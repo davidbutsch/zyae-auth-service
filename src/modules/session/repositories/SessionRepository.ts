@@ -13,7 +13,7 @@ export class SessionRepository implements ISessionRepository {
     return null;
   }
   async findByAccessToken(at: string): Promise<Session | null> {
-    const searchResults = await redis.call(
+    const userSession = await redis.call(
       "FT.SEARCH",
       "idx:session",
       `@accessToken:(${at})`
@@ -30,8 +30,8 @@ export class SessionRepository implements ISessionRepository {
      *    ]
      *  ]
      */
-    if (Array.isArray(searchResults)) {
-      const key = searchResults[2]?.[1];
+    if (Array.isArray(userSession)) {
+      const key = userSession[2]?.[1];
 
       if (typeof key === "string") {
         const session: Session = JSON.parse(key);
@@ -42,14 +42,14 @@ export class SessionRepository implements ISessionRepository {
     return null;
   }
   async findByRefreshToken(rt: string): Promise<Session | null> {
-    const searchResults = await redis.call(
+    const userSession = await redis.call(
       "FT.SEARCH",
       "idx:session",
       `@refreshToken:(${rt})`
     );
 
-    if (Array.isArray(searchResults)) {
-      const key = searchResults[2]?.[1];
+    if (Array.isArray(userSession)) {
+      const key = userSession[2]?.[1];
 
       if (typeof key === "string") {
         const session: Session = JSON.parse(key);
@@ -58,5 +58,32 @@ export class SessionRepository implements ISessionRepository {
     }
 
     return null;
+  }
+  async create(session: Session) {
+    await redis.call(
+      "JSON.SET",
+      `session:${session.id}`,
+      "$",
+      JSON.stringify(session)
+    );
+
+    return session;
+  }
+  async update(session: Session) {
+    const currentDate = new Date();
+
+    session.updatedAt = currentDate.toISOString();
+
+    await redis.call(
+      "JSON.SET",
+      `session:${session.id}`,
+      "$",
+      JSON.stringify(session)
+    );
+
+    return session;
+  }
+  async delete(session: Session): Promise<void> {
+    await redis.call("JSON.DEL", `session:${session.id}`);
   }
 }

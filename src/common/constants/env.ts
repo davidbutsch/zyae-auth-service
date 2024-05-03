@@ -11,6 +11,8 @@ export class ENV {
   public CORS_WHITELIST: string | undefined;
   public MONGODB_URL: string | undefined;
   public REDIS_URL: string | undefined;
+  public GOOGLE_CLIENT_ID: string | undefined;
+  public GOOGLE_CLIENT_SECRET: string | undefined;
 
   private readonly keys: (keyof ENV)[];
 
@@ -23,6 +25,8 @@ export class ENV {
       "CORS_WHITELIST",
       "MONGODB_URL",
       "REDIS_URL",
+      "GOOGLE_CLIENT_ID",
+      "GOOGLE_CLIENT_SECRET",
     ];
 
     this.loadENV();

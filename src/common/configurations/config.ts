@@ -8,4 +8,8 @@ export const config = {
     mongodb: { url: env.MONGODB_URL! },
     redis: { url: env.REDIS_URL! },
   },
+  googleClient: {
+    id: env.GOOGLE_CLIENT_ID,
+    secret: env.GOOGLE_CLIENT_SECRET,
+  },
 };

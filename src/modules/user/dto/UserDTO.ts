@@ -10,7 +10,7 @@ import { IsNotEmptyObject, IsString, ValidateNested } from "class-validator";
 
 import { Type } from "class-transformer";
 
-export class UserDTO implements Omit<User, "_id"> {
+export class UserDTO implements Omit<User, "_id" | "security"> {
   @IsString() id: string;
 
   @IsNotEmptyObject()

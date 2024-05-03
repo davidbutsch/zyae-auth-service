@@ -4,6 +4,7 @@ import {
   useContainer,
 } from "routing-controllers";
 import { DependencyContainer, container } from "tsyringe";
+import { GoogleOAuth2Service, IOAuth2Service } from "@/modules/oauth2";
 import {
   ISessionRepository,
   ISessionService,
@@ -39,6 +40,9 @@ container.register<ISessionService>("SessionService", {
 });
 container.register<ISessionRepository>("SessionRepository", {
   useClass: SessionRepository,
+});
+container.register<IOAuth2Service>("GoogleOAuth2Service", {
+  useClass: GoogleOAuth2Service,
 });
 
 container.register("UserProducer", {

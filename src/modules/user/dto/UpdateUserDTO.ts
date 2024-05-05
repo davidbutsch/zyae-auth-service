@@ -1,16 +1,24 @@
+import { IsOptional, IsString, ValidateNested } from "class-validator";
+
+import { IsISO6391 } from "@/common";
 import { Type } from "class-transformer";
-import { ValidateNested } from "class-validator";
 
-class UpdateUserPreferences {}
+class UpdateUserProfile {
+  @IsString() firstName: string;
+  @IsOptional() @IsString() lastName?: string;
+}
 
-/**
- * Local users reflect user state in a dedicated user/auth service. Only local properties should be mutable.
- * ^ if this is a music service, properties pertaining to music data should be mutable.
- *
- * `id`, `profile`, `flags`, and `metadata` are not local properties and are immutable
- * `preferences` may include local mutable properties defined in a seperate class
- */
+class UpdateUserPreferences {
+  @IsISO6391() language: string;
+}
+
+// TODO add dedicated update pass, email, thumbnail methods
+
 export class UpdateUserDTO {
+  @ValidateNested()
+  @Type(() => UpdateUserProfile)
+  profile: UpdateUserProfile;
+
   @ValidateNested()
   @Type(() => UpdateUserPreferences)
   preferences: UpdateUserPreferences;

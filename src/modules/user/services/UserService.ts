@@ -90,7 +90,12 @@ export class UserService implements IUserService {
 
     return UserDTO.toDTO(updatedUserDoc);
   }
-  delete(_id: string | Types.ObjectId | undefined): Promise<void> {
-    throw new Error("Method not implemented.");
+  async delete(id: string | Types.ObjectId | undefined): Promise<UserDTO> {
+    const deletedUserDoc = await this.userRepository.delete(id);
+
+    if (!deletedUserDoc)
+      throw new AppError(StatusCodes.NOT_FOUND, "User not found");
+
+    return UserDTO.toDTO(deletedUserDoc);
   }
 }

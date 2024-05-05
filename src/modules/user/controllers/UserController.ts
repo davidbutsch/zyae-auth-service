@@ -1,5 +1,6 @@
 import {
   Body,
+  Delete,
   Get,
   Head,
   HttpCode,
@@ -75,6 +76,18 @@ export class UserController {
     const session = res.locals.session;
 
     const user = await this.userService.update(session.userId, update);
+
+    return {
+      data: { user },
+    };
+  }
+
+  @UseBefore(AttachSession)
+  @Delete("/me")
+  async deleteMe(@Res() res: Response) {
+    const session = res.locals.session;
+
+    const user = await this.userService.delete(session.userId);
 
     return {
       data: { user },

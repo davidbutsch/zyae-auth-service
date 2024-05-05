@@ -7,5 +7,5 @@ export interface IUserService {
   findByCredentials(credentials: CredentialsDTO): Promise<UserDTO>;
   create(user: CreateUserDTO): Promise<UserDTO>;
   update(id: string, update: UpdateUserDTO): Promise<UserDTO>;
-  delete(id: string): Promise<void>;
+  delete(id: string): Promise<UserDTO>;
 }

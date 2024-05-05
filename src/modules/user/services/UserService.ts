@@ -5,6 +5,7 @@ import {
   UpdateUserDTO,
   User,
   UserDTO,
+  UserProducer,
 } from "@/modules/user";
 import { Types } from "mongoose";
 
@@ -18,7 +19,8 @@ import { inject, injectable } from "tsyringe";
 @injectable()
 export class UserService implements IUserService {
   constructor(
-    @inject("UserRepository") private userRepository: IUserRepository
+    @inject("UserRepository") private userRepository: IUserRepository,
+    @inject("UserProducer") private userProducer: UserProducer
   ) {}
 
   async findById(id: string): Promise<UserDTO> {
@@ -74,6 +76,8 @@ export class UserService implements IUserService {
 
     const newUserDoc = await this.userRepository.create(newUser);
 
+    this.userProducer.create(newUserDoc);
+
     return UserDTO.toDTO(newUserDoc);
   }
   async update(id: string, update: UpdateUserDTO): Promise<UserDTO> {
@@ -88,6 +92,8 @@ export class UserService implements IUserService {
     if (!updatedUserDoc)
       throw new AppError(StatusCodes.NOT_FOUND, "User not found");
 
+    this.userProducer.update(updatedUserDoc);
+
     return UserDTO.toDTO(updatedUserDoc);
   }
   async delete(id: string | Types.ObjectId | undefined): Promise<UserDTO> {
@@ -95,6 +101,8 @@ export class UserService implements IUserService {
 
     if (!deletedUserDoc)
       throw new AppError(StatusCodes.NOT_FOUND, "User not found");
+
+    if (id) this.userProducer.delete(id);
 
     return UserDTO.toDTO(deletedUserDoc);
   }

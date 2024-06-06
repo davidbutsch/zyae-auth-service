@@ -2,7 +2,7 @@ import { Credentials as GoogleCredentials } from "google-auth-library";
 import { IOAuth2Service } from "@/modules/oauth2";
 import { config, DEFAULT_USER_THUMBNAIL_URL } from "@/common";
 import { google } from "googleapis";
-import { IUserRepository, User, UserDTO } from "@/modules/user";
+import { IUserRepository, User, UserDTO, UserProducer } from "@/modules/user";
 import { inject, injectable } from "tsyringe";
 import { AppError } from "@/errors";
 import { StatusCodes } from "http-status-codes";
@@ -23,7 +23,8 @@ export class GoogleOAuth2Service implements IOAuth2Service {
   );
 
   constructor(
-    @inject("UserRepository") private userRepository: IUserRepository
+    @inject("UserRepository") private userRepository: IUserRepository,
+    @inject("UserProducer") private userProducer: UserProducer
   ) {}
 
   getAuthUrl(state?: { [key: string]: string }): string {
@@ -77,6 +78,8 @@ export class GoogleOAuth2Service implements IOAuth2Service {
       };
 
       const newUserDoc = await this.userRepository.create(newUser);
+
+      this.userProducer.create(newUserDoc);
 
       userDoc = newUserDoc;
     }

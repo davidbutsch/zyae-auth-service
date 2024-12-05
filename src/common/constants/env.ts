@@ -1,5 +1,5 @@
-import { defaultEnvOptions } from "./defaults";
 import dotenv from "dotenv";
+import { defaultEnvOptions } from "./defaults";
 
 dotenv.config();
 
@@ -11,6 +11,7 @@ export class ENV {
   public CORS_WHITELIST: string | undefined;
   public MONGODB_URL: string | undefined;
   public REDIS_URL: string | undefined;
+  public REDIS_PASS: string | undefined;
   public GOOGLE_CLIENT_ID: string | undefined;
   public GOOGLE_CLIENT_SECRET: string | undefined;
 
@@ -25,6 +26,7 @@ export class ENV {
       "CORS_WHITELIST",
       "MONGODB_URL",
       "REDIS_URL",
+      "REDIS_PASS",
       "GOOGLE_CLIENT_ID",
       "GOOGLE_CLIENT_SECRET",
     ];

@@ -4,16 +4,16 @@ import { defaultEnvOptions } from "./defaults";
 dotenv.config();
 
 export class ENV {
-  public NODE_ENV: string | undefined;
-  public SERVICE_TAG: string | undefined;
-  public LOG_PATH: string | undefined;
-  public PORT: string | undefined;
-  public CORS_WHITELIST: string | undefined;
-  public MONGODB_URL: string | undefined;
-  public REDIS_URL: string | undefined;
-  public REDIS_PASS: string | undefined;
-  public GOOGLE_CLIENT_ID: string | undefined;
-  public GOOGLE_CLIENT_SECRET: string | undefined;
+  public NODE_ENV: string;
+  public SERVICE_TAG: string;
+  public LOG_PATH: string;
+  public PORT: string;
+  public CORS_WHITELIST: string;
+  public MONGODB_URL: string;
+  public REDIS_URL: string;
+  public REDIS_PASS: string;
+  public GOOGLE_CLIENT_ID: string;
+  public GOOGLE_CLIENT_SECRET: string;
 
   private readonly keys: (keyof ENV)[];
 
@@ -36,7 +36,8 @@ export class ENV {
 
   private loadENV = () => {
     this.keys.forEach((key) => {
-      this[key] = process.env[key] || defaultEnvOptions[key];
+      // service aborts for any missing environment variables so we can safely cast as string
+      this[key] = process.env[key] || (defaultEnvOptions[key] as string);
 
       if (this[key] === undefined) {
         throw new Error(

@@ -20,7 +20,7 @@ export class SyntaxErrorHandler implements ExpressErrorMiddlewareInterface {
       message: error.message,
     };
 
-    if (env.NODE_ENV === "development")
+    if (env.keys.NODE_ENV === "development")
       errorResponse.errors = [serializeError(error)];
 
     res.status(errorResponse.code).json({ error: errorResponse });

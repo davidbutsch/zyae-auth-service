@@ -19,7 +19,7 @@ export class AppErrorHandler implements ExpressErrorMiddlewareInterface {
       message: error.message,
     };
 
-    if (env.NODE_ENV === "development" && error.errors.length > 0)
+    if (env.keys.NODE_ENV === "development" && error.errors.length > 0)
       errorResponse.errors = error.errors.map((error) => serializeError(error));
 
     res.status(errorResponse.code).json({ error: errorResponse });

@@ -6,7 +6,7 @@ const transports = [];
 
 const consoleTransport = new winston.transports.Console({
   format:
-    env.NODE_ENV === "development"
+    env.keys.NODE_ENV === "development"
       ? winston.format.combine(winston.format.cli(), winston.format.splat())
       : undefined,
 });

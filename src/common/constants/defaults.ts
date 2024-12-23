@@ -1,9 +1,9 @@
 import { ConsumerOptions, MessageOptions } from "@/common";
 
-import { ENV } from "./env";
+import { EnvKeys } from "./env";
 import { StreamKeys } from ".";
 
-export const defaultEnvOptions: Partial<Record<keyof ENV, string>> = {
+export const defaultEnvOptions: Partial<EnvKeys> = {
   NODE_ENV: "production",
   LOG_PATH: "./logs",
 };

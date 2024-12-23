@@ -17,7 +17,7 @@ export class UnknownErrorHandler implements ExpressErrorMiddlewareInterface {
       message: error.message || "Unexpected error occured",
     };
 
-    if (env.NODE_ENV === "development")
+    if (env.keys.NODE_ENV === "development")
       errorResponse.errors = [serializeError(error)];
 
     res.status(500).json({ error: errorResponse });

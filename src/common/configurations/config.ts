@@ -1,15 +1,15 @@
 import { env } from "@/common";
 
 export const config = {
-  serviceTag: env.SERVICE_TAG,
-  port: env.PORT,
-  corsWhitelist: env.CORS_WHITELIST.split(","),
+  serviceTag: env.keys.SERVICE_TAG,
+  port: env.keys.PORT,
+  corsWhitelist: env.keys.CORS_WHITELIST.split(","),
   databases: {
-    mongodb: { url: env.MONGODB_URL },
-    redis: { url: env.REDIS_URL, password: env.REDIS_PASS },
+    mongodb: { url: env.keys.MONGODB_URL },
+    redis: { url: env.keys.REDIS_URL, password: env.keys.REDIS_PASS },
   },
   googleClient: {
-    id: env.GOOGLE_CLIENT_ID,
-    secret: env.GOOGLE_CLIENT_SECRET,
+    id: env.keys.GOOGLE_CLIENT_ID,
+    secret: env.keys.GOOGLE_CLIENT_SECRET,
   },
 };

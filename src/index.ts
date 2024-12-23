@@ -12,5 +12,5 @@ import * as libs from "@/libs";
 import { env } from "@/common";
 
 libs.Logger.info(
-  `zyae-auth-service with process id of ${process.pid} starting in ${env.NODE_ENV} mode`
+  `zyae-auth-service with process id of ${process.pid} starting in ${env.keys.NODE_ENV} mode`
 );

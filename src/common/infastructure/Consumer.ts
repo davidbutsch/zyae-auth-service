@@ -134,7 +134,13 @@ export class Consumer {
 
   public async groupRegistrator() {
     try {
-      await redis.xgroup("CREATE", StreamKeys.USER, config.serviceTag, "$");
+      await redis.xgroup(
+        "CREATE",
+        StreamKeys.USER,
+        config.serviceTag,
+        "$",
+        "MKSTREAM"
+      );
     } catch (error: any) {
       if (error?.message === "BUSYGROUP Consumer Group name already exists")
         Logger.warn(

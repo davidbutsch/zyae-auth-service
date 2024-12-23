@@ -5,12 +5,11 @@ import {
   QueryParams,
   Redirect,
   Res,
+  UnauthorizedError,
 } from "routing-controllers";
 
 import { inject, injectable } from "tsyringe";
 import { IOAuth2Service, GoogleOAuth2CallbackQuery } from "@/modules/oauth2";
-import { AppError } from "@/errors";
-import { StatusCodes } from "http-status-codes";
 import { ISessionService } from "@/modules/session";
 
 import { Response } from "express";
@@ -40,12 +39,8 @@ export class GoogleOAuth2Controller {
     query: GoogleOAuth2CallbackQuery,
     @Res() res: Response
   ) {
-    if (query.error) throw new AppError(StatusCodes.UNAUTHORIZED, query.error);
-    if (!query.code)
-      throw new AppError(
-        StatusCodes.UNAUTHORIZED,
-        "query param `code` required"
-      );
+    if (query.error) throw new UnauthorizedError(query.error);
+    if (!query.code) throw new UnauthorizedError("query param `code` required");
 
     const state = query.state ? JSON.parse(query.state) : undefined;
 

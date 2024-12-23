@@ -1,24 +1,20 @@
+import { BASE_PATH, config, defaultValidationConfig } from "@/common";
 import {
-  AppErrorHandler,
   ErrorLogger,
+  HttpErrorHandler,
   RequestLogger,
   RouteNotFoundHandler,
-  SyntaxErrorHandler,
-  UnknownErrorHandler,
-  ValidationErrorHandler,
 } from "@/middlewares";
-import { BASE_PATH, config, defaultValidationConfig } from "@/common";
+import { ForbiddenError, useExpressServer } from "routing-controllers";
 import express, { Express } from "express";
 
-import { AppError } from "@/errors";
 import { GoogleOAuth2Controller } from "@/modules/oauth2";
 import { SessionController } from "@/modules/session";
-import { StatusCodes } from "http-status-codes";
+import { ToHttpError } from "@/middlewares/errors/ToHttpError";
 import { UserController } from "@/modules/user";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import helmet from "helmet";
-import { useExpressServer } from "routing-controllers";
 
 const securityMiddleware = (app: Express) => {
   app.enable("trust proxy");
@@ -29,10 +25,7 @@ const securityMiddleware = (app: Express) => {
         if (!origin || config.corsWhitelist.indexOf(origin) !== -1) {
           callback(null, true);
         } else {
-          callback(
-            new AppError(StatusCodes.FORBIDDEN, "Not allowed by CORS"),
-            false
-          );
+          callback(new ForbiddenError("Not allowed by CORS"), false);
         }
       },
       credentials: true,
@@ -58,10 +51,8 @@ useExpressServer(app, {
   middlewares: [
     RequestLogger,
     RouteNotFoundHandler,
+    ToHttpError,
+    HttpErrorHandler,
     ErrorLogger,
-    AppErrorHandler,
-    SyntaxErrorHandler,
-    ValidationErrorHandler,
-    UnknownErrorHandler,
   ],
 });

@@ -7,8 +7,7 @@ import {
 } from "@/modules/session";
 import { ACCESS_TOKEN_LIFETIME, generateToken } from "@/common";
 import { IUserService } from "@/modules/user";
-import { AppError } from "@/errors";
-import { StatusCodes } from "http-status-codes";
+import { NotFoundError, UnauthorizedError } from "routing-controllers";
 
 @injectable()
 export class SessionService implements ISessionService {
@@ -21,8 +20,7 @@ export class SessionService implements ISessionService {
   async findById(id: string): Promise<Session> {
     const session = await this.sessionRepository.findById(id);
 
-    if (!session)
-      throw new AppError(StatusCodes.NOT_FOUND, "Session not found");
+    if (!session) throw new NotFoundError("Session not found");
 
     return session;
   }
@@ -57,8 +55,7 @@ export class SessionService implements ISessionService {
   async refreshSession(rt: string): Promise<Session> {
     const session = await this.sessionRepository.findByRefreshToken(rt);
 
-    if (!session)
-      throw new AppError(StatusCodes.UNAUTHORIZED, "Session not found");
+    if (!session) throw new UnauthorizedError("Session not found");
 
     const currentDate = new Date();
     const expiresAtDate = new Date(
@@ -77,8 +74,7 @@ export class SessionService implements ISessionService {
   async deleteSessionByRefreshToken(rt: string): Promise<void> {
     const session = await this.sessionRepository.findByRefreshToken(rt);
 
-    if (!session)
-      throw new AppError(StatusCodes.NOT_FOUND, "Session not found");
+    if (!session) throw new NotFoundError("Session not found");
 
     await this.sessionRepository.delete(session);
   }

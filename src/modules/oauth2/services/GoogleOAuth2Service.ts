@@ -4,8 +4,7 @@ import { config, DEFAULT_USER_THUMBNAIL_URL } from "@/common";
 import { google } from "googleapis";
 import { IUserRepository, User, UserDTO, UserProducer } from "@/modules/user";
 import { inject, injectable } from "tsyringe";
-import { AppError } from "@/errors";
-import { StatusCodes } from "http-status-codes";
+import { InternalServerError } from "routing-controllers";
 
 const CALLBACK_URL = "https://zyae.net/auth/api/v1/oauth2/google/callback";
 
@@ -52,10 +51,7 @@ export class GoogleOAuth2Service implements IOAuth2Service {
     const { data } = await oauth2.userinfo.get();
 
     if (!(data.email && data.given_name))
-      throw new AppError(
-        StatusCodes.INTERNAL_SERVER_ERROR,
-        "Missing Google user email key"
-      );
+      throw new InternalServerError("Missing Google user email key");
 
     let userDoc: User;
 

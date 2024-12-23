@@ -10,11 +10,14 @@ import {
 import { Types } from "mongoose";
 
 import { DEFAULT_USER_THUMBNAIL_URL, objectToDotNotation } from "@/common";
-import { AppError } from "@/errors";
 import { CredentialsDTO } from "@/modules/session";
 import bcrypt from "bcrypt";
-import { StatusCodes } from "http-status-codes";
 import { inject, injectable } from "tsyringe";
+import {
+  BadRequestError,
+  NotFoundError,
+  UnauthorizedError,
+} from "routing-controllers";
 
 @injectable()
 export class UserService implements IUserService {
@@ -26,7 +29,7 @@ export class UserService implements IUserService {
   async findById(id: string): Promise<UserDTO> {
     const user = await this.userRepository.findByFilter({ _id: id });
 
-    if (!user) throw new AppError(StatusCodes.NOT_FOUND, "User not found");
+    if (!user) throw new NotFoundError("User not found");
 
     return UserDTO.toDTO(user);
   }
@@ -35,19 +38,17 @@ export class UserService implements IUserService {
       profile: { email: credentials.email },
     });
 
-    if (!user)
-      throw new AppError(StatusCodes.UNAUTHORIZED, "Invalid credentials");
+    if (!user) throw new UnauthorizedError("Invalid credentials");
 
     if (!user.security.password)
-      throw new AppError(StatusCodes.UNAUTHORIZED, "Invalid credentials");
+      throw new UnauthorizedError("Invalid credentials");
 
     const passwordsMatch = await bcrypt.compare(
       credentials.password,
       user.security.password
     );
 
-    if (!passwordsMatch)
-      throw new AppError(StatusCodes.UNAUTHORIZED, "Invalid credentials");
+    if (!passwordsMatch) throw new UnauthorizedError("Invalid credentials");
 
     return UserDTO.toDTO(user);
   }
@@ -59,8 +60,7 @@ export class UserService implements IUserService {
       }
     );
 
-    if (userWithThisEmail)
-      throw new AppError(StatusCodes.CONFLICT, "Email already taken");
+    if (userWithThisEmail) throw new BadRequestError("Email already taken");
 
     const newUser: Partial<User> = {
       profile: {
@@ -89,8 +89,7 @@ export class UserService implements IUserService {
       }
     );
 
-    if (!updatedUserDoc)
-      throw new AppError(StatusCodes.NOT_FOUND, "User not found");
+    if (!updatedUserDoc) throw new NotFoundError("User not found");
 
     this.userProducer.update(updatedUserDoc);
 
@@ -99,8 +98,7 @@ export class UserService implements IUserService {
   async delete(id: string | Types.ObjectId | undefined): Promise<UserDTO> {
     const deletedUserDoc = await this.userRepository.delete(id);
 
-    if (!deletedUserDoc)
-      throw new AppError(StatusCodes.NOT_FOUND, "User not found");
+    if (!deletedUserDoc) throw new NotFoundError("User not found");
 
     if (id) this.userProducer.delete(id);
 

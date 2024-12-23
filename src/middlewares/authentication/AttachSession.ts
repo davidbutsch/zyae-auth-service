@@ -1,10 +1,11 @@
-import { ExpressMiddlewareInterface, Middleware } from "routing-controllers";
+import {
+  ExpressMiddlewareInterface,
+  Middleware,
+  UnauthorizedError,
+} from "routing-controllers";
 import { ISessionRepository, ISessionService } from "@/modules/session";
 import { NextFunction, Request, Response } from "express";
 import { container, injectable } from "tsyringe";
-
-import { AppError } from "@/errors";
-import { StatusCodes } from "http-status-codes";
 
 @injectable()
 @Middleware({ type: "before" })
@@ -21,12 +22,10 @@ export class AttachSession implements ExpressMiddlewareInterface {
     const accessToken = req.cookies.at;
     const session = await this.sessionRepository.findByAccessToken(accessToken);
 
-    if (!session)
-      throw new AppError(StatusCodes.UNAUTHORIZED, "Session not found");
+    if (!session) throw new UnauthorizedError("Session not found");
 
     const isExpired = this.sessionService.isSessionExpired(session);
-    if (isExpired)
-      throw new AppError(StatusCodes.UNAUTHORIZED, "Session access expired");
+    if (isExpired) throw new UnauthorizedError("Session access expired");
 
     res.locals.session = session;
 

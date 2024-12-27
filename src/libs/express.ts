@@ -5,16 +5,17 @@ import {
   RequestLogger,
   RouteNotFoundHandler,
 } from "@/middlewares";
-import { ForbiddenError, useExpressServer } from "routing-controllers";
 import express, { Express } from "express";
+import { ForbiddenError, useExpressServer } from "routing-controllers";
 
+import { ToHttpError } from "@/middlewares/errors/ToHttpError";
 import { GoogleOAuth2Controller } from "@/modules/oauth2";
 import { SessionController } from "@/modules/session";
-import { ToHttpError } from "@/middlewares/errors/ToHttpError";
 import { UserController } from "@/modules/user";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import helmet from "helmet";
+import { Logger } from ".";
 
 const securityMiddleware = (app: Express) => {
   app.enable("trust proxy");
@@ -55,4 +56,8 @@ useExpressServer(app, {
     HttpErrorHandler,
     ErrorLogger,
   ],
+});
+
+app.listen(config.port, () => {
+  Logger.info(`HTTP server listening on port ${config.port}`);
 });

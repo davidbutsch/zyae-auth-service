@@ -1,5 +1,5 @@
-import { defaultEnvOptions } from "./defaults";
 import dotenv from "dotenv";
+import { defaultEnvOptions } from "./defaults";
 
 dotenv.config();
 
@@ -9,7 +9,7 @@ const keys = [
   "LOG_PATH",
   "PORT",
   "CORS_WHITELIST",
-  "MONGODB_URL",
+  "POSTGRES_URL",
   "REDIS_URL",
   "REDIS_PASS",
   "GOOGLE_CLIENT_ID",

@@ -5,7 +5,7 @@ export const config = {
   port: env.keys.PORT,
   corsWhitelist: env.keys.CORS_WHITELIST.split(","),
   databases: {
-    mongodb: { url: env.keys.MONGODB_URL },
+    postgres: { url: env.keys.POSTGRES_URL },
     redis: { url: env.keys.REDIS_URL, password: env.keys.REDIS_PASS },
   },
   googleClient: {

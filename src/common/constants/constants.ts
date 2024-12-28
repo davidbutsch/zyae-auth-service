@@ -1,4 +1,4 @@
-export const BASE_PATH = "/";
+export const BASE_PATH = "";
 export const ACCESS_TOKEN_LIFETIME = 1000 * 60 * 10; // 10 minutes
 
 export const enum StreamKeys {

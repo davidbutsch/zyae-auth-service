@@ -12,12 +12,12 @@ import { Types } from "mongoose";
 import { DEFAULT_USER_THUMBNAIL_URL, objectToDotNotation } from "@/common";
 import { CredentialsDTO } from "@/modules/session";
 import bcrypt from "bcrypt";
-import { inject, injectable } from "tsyringe";
 import {
   BadRequestError,
   NotFoundError,
   UnauthorizedError,
 } from "routing-controllers";
+import { inject, injectable } from "tsyringe";
 
 @injectable()
 export class UserService implements IUserService {
@@ -27,6 +27,13 @@ export class UserService implements IUserService {
   ) {}
 
   async findById(id: string): Promise<UserDTO> {
+    const user = await this.userRepository.findById(id);
+
+    if (!user) throw new NotFoundError("User not found");
+
+    return UserDTO.toDTO(user);
+  }
+  async findByEmail(id: string): Promise<UserDTO> {
     const user = await this.userRepository.findByFilter({ _id: id });
 
     if (!user) throw new NotFoundError("User not found");

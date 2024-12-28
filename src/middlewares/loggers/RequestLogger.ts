@@ -1,5 +1,5 @@
-import { ExpressMiddlewareInterface, Middleware } from "routing-controllers";
 import { NextFunction, Request, Response } from "express";
+import { ExpressMiddlewareInterface, Middleware } from "routing-controllers";
 
 import { Logger } from "@/libs";
 

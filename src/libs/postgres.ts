@@ -31,7 +31,7 @@ const setup = async () => {
       id SERIAL PRIMARY KEY,
       displayName VARCHAR(100) NOT NULL,
       email VARCHAR(100) UNIQUE NOT NULL,
-      passwordHash TEXT,
+      password TEXT,
       thumbnail TEXT
     );`);
   } catch (error) {

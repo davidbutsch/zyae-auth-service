@@ -1,31 +1,48 @@
-import { Document, QueryOptions, Types, UpdateQuery } from "mongoose";
-import { IUserRepository, User, UserModel } from "@/modules/user";
+import { IUserRepository, User } from "@/modules/user";
 
-import { DeepPartial } from "@/types";
-import { objectToDotNotation } from "@/common";
+import { pool } from "@/libs";
 
 export class UserRepository implements IUserRepository {
-  findByFilter(
-    filter: DeepPartial<User>,
-    options?: QueryOptions<User & Document>
-  ): Promise<(User & Document) | null> {
-    const filterQuery = objectToDotNotation(filter);
-    return UserModel.findOne(filterQuery, null, options);
+  findAllByFilter(filter: Partial<User>): Promise<User | null> {
+    throw new Error("Method not implemented.");
   }
-  create(user: DeepPartial<User>): Promise<User & Document> {
-    return UserModel.create(user);
+  findOneByFilter(filter: Partial<User>): Promise<User | null> {
+    throw new Error("Method not implemented.");
   }
-  update(
-    id: string | Types.ObjectId | undefined,
-    update: UpdateQuery<User & Document>,
-    options?: QueryOptions<User & Document>
-  ): Promise<(User & Document) | null> {
-    return UserModel.findByIdAndUpdate(id, update, options);
+  async findByFilter(filter: Partial<User>): Promise<User | null> {
+    const keys = Object.keys(filter);
+    const values = Object.values(filter);
+
+    const conditions = keys.map((key, index) => `${key} = $${index + 1}`);
+
+    const query = `
+    SELECT * FROM "user"
+    WHERE ${conditions.join(" AND ")}`;
+
+    const { rows } = await pool.query<User>(query, values);
+
+    return rows[0];
   }
-  delete(
-    id: string | Types.ObjectId | undefined,
-    options?: QueryOptions<User & Document>
-  ): Promise<(User & Document) | null> {
-    return UserModel.findByIdAndDelete(id, options);
+  async create(user: Partial<User>): Promise<User> {
+    const { displayName, email, password } = user;
+
+    const query = `
+    INSERT INTO "user" (displayName, email, password)
+    VALUES ($1, $2, $3)
+    RETURNING *;`;
+
+    const values = [displayName, email, password];
+
+    const result = await pool.query(query, values);
+
+    console.log(result);
+
+    return null as unknown as User;
+  }
+  update(id: string, update: Partial<User>): Promise<User | null> {
+    throw new Error("Method not implemented.");
+  }
+  delete(id: string): Promise<User | null> {
+    throw new Error("Method not implemented.");
   }
 }

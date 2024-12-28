@@ -14,6 +14,7 @@ import {
 
 import { Response } from "express";
 
+import { AttachSession } from "@/middlewares";
 import {
   CreateUserDTO,
   IUserRepository,
@@ -21,7 +22,6 @@ import {
   UpdateUserDTO,
 } from "@/modules/user";
 import { inject, injectable } from "tsyringe";
-import { AttachSession } from "@/middlewares";
 
 @injectable()
 @JsonController("/users")

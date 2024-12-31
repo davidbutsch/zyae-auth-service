@@ -1,12 +1,12 @@
-import { Credentials as GoogleCredentials } from "google-auth-library";
-import { IOAuth2Service } from "@/modules/oauth2";
 import { config, DEFAULT_USER_THUMBNAIL_URL } from "@/common";
-import { google } from "googleapis";
+import { IOAuth2Service } from "@/modules/oauth2";
 import { IUserRepository, User, UserDTO, UserProducer } from "@/modules/user";
-import { inject, injectable } from "tsyringe";
+import { Credentials as GoogleCredentials } from "google-auth-library";
+import { google } from "googleapis";
 import { InternalServerError } from "routing-controllers";
+import { inject, injectable } from "tsyringe";
 
-const CALLBACK_URL = "https://zyae.net/auth/api/v1/oauth2/google/callback";
+const CALLBACK_URL = "https://zyae.net/auth/api/oauth2/google/callback";
 
 const SCOPE = [
   "https://www.googleapis.com/auth/userinfo.profile",
@@ -51,35 +51,31 @@ export class GoogleOAuth2Service implements IOAuth2Service {
     const { data } = await oauth2.userinfo.get();
 
     if (!(data.email && data.given_name))
-      throw new InternalServerError("Missing Google user email key");
+      throw new InternalServerError(
+        "Missing Oauth2 data.email & data.given_name"
+      );
 
-    let userDoc: User;
+    let userEntity: User;
 
-    const userWithThisEmail = await this.userRepository.findByFilter(
-      { profile: { email: data.email } },
-      {
-        lean: true,
-      }
-    );
+    const userWithThisEmail = await this.userRepository.findOneByFilter({
+      email: data.email,
+    });
 
-    if (userWithThisEmail) userDoc = userWithThisEmail;
+    if (userWithThisEmail) userEntity = userWithThisEmail;
     else {
       const newUser: Partial<User> = {
-        profile: {
-          email: data.email,
-          firstName: data.given_name,
-          lastName: data.family_name || undefined,
-          thumbnail: data.picture || DEFAULT_USER_THUMBNAIL_URL,
-        },
+        email: data.email,
+        displayName: data.given_name,
+        thumbnail: data.picture || DEFAULT_USER_THUMBNAIL_URL,
       };
 
-      const newUserDoc = await this.userRepository.create(newUser);
+      const newUserEntity = await this.userRepository.create(newUser);
 
-      this.userProducer.create(newUserDoc);
+      this.userProducer.create(newUserEntity);
 
-      userDoc = newUserDoc;
+      userEntity = newUserEntity;
     }
 
-    return UserDTO.toDTO(userDoc);
+    return UserDTO.toDTO(userEntity);
   }
 }

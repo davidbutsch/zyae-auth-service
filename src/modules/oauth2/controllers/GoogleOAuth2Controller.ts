@@ -8,12 +8,12 @@ import {
   UnauthorizedError,
 } from "routing-controllers";
 
-import { inject, injectable } from "tsyringe";
-import { IOAuth2Service, GoogleOAuth2CallbackQuery } from "@/modules/oauth2";
+import { GoogleOAuth2CallbackQuery, IOAuth2Service } from "@/modules/oauth2";
 import { ISessionService } from "@/modules/session";
+import { inject, injectable } from "tsyringe";
 
-import { Response } from "express";
 import { SERVICE_FE_HOME_URL, sessionCookieConfig } from "@/common";
+import { Response } from "express";
 
 @injectable()
 @JsonController("/oauth2/google")

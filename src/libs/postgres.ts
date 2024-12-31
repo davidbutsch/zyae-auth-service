@@ -29,9 +29,9 @@ const setup = async () => {
     await pool.query(`
     CREATE TABLE IF NOT EXISTS "user" (
       id SERIAL PRIMARY KEY,
-      displayName VARCHAR(100) NOT NULL,
+      "displayName" VARCHAR(100) NOT NULL,
       email VARCHAR(100) UNIQUE NOT NULL,
-      password TEXT,
+      "passwordHash" TEXT,
       thumbnail TEXT
     );`);
   } catch (error) {

@@ -3,13 +3,7 @@ import { IUserRepository, User } from "@/modules/user";
 import { pool } from "@/libs";
 
 export class UserRepository implements IUserRepository {
-  findAllByFilter(filter: Partial<User>): Promise<User | null> {
-    throw new Error("Method not implemented.");
-  }
-  findOneByFilter(filter: Partial<User>): Promise<User | null> {
-    throw new Error("Method not implemented.");
-  }
-  async findByFilter(filter: Partial<User>): Promise<User | null> {
+  async findOneByFilter(filter: Partial<User>): Promise<User | undefined> {
     const keys = Object.keys(filter);
     const values = Object.values(filter);
 
@@ -24,25 +18,49 @@ export class UserRepository implements IUserRepository {
     return rows[0];
   }
   async create(user: Partial<User>): Promise<User> {
-    const { displayName, email, password } = user;
+    const { displayName, email, passwordHash, thumbnail } = user;
 
     const query = `
-    INSERT INTO "user" (displayName, email, password)
-    VALUES ($1, $2, $3)
+    INSERT INTO "user" ("displayName", email, "passwordHash", thumbnail)
+    VALUES ($1, $2, $3, $4)
+
     RETURNING *;`;
 
-    const values = [displayName, email, password];
+    const values = [displayName, email, passwordHash, thumbnail];
 
-    const result = await pool.query(query, values);
+    const { rows } = await pool.query<User>(query, values);
 
-    console.log(result);
-
-    return null as unknown as User;
+    return rows[0];
   }
-  update(id: string, update: Partial<User>): Promise<User | null> {
-    throw new Error("Method not implemented.");
+  async update(id: string, update: Partial<User>): Promise<User | undefined> {
+    const keys = Object.keys(update);
+    const values = [...Object.values(update), id];
+
+    const setClause = keys
+      .map((key, index) => `"${key}" = $${index + 1}`)
+      .join(", ");
+
+    const query = `
+      UPDATE "user"
+      SET ${setClause}
+      WHERE id = $${values.length}
+
+      RETURNING *;`;
+
+    const { rows } = await pool.query<User>(query, values);
+
+    return rows[0];
   }
-  delete(id: string): Promise<User | null> {
-    throw new Error("Method not implemented.");
+  async delete(id: string): Promise<User | null> {
+    const values = [id];
+    const query = `
+      DELETE FROM "user"
+      WHERE id = $1
+
+      RETURNING *;`;
+
+    const { rows } = await pool.query<User>(query, values);
+
+    return rows[0];
   }
 }

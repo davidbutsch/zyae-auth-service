@@ -7,11 +7,10 @@ import {
   UserDTO,
   UserProducer,
 } from "@/modules/user";
-import { Types } from "mongoose";
 
-import { DEFAULT_USER_THUMBNAIL_URL, objectToDotNotation } from "@/common";
+import { DEFAULT_USER_THUMBNAIL_URL } from "@/common";
 import { CredentialsDTO } from "@/modules/session";
-import bcrypt from "bcrypt";
+import { compare, hash } from "bcrypt";
 import {
   BadRequestError,
   NotFoundError,
@@ -27,32 +26,33 @@ export class UserService implements IUserService {
   ) {}
 
   async findById(id: string): Promise<UserDTO> {
-    const user = await this.userRepository.findById(id);
+    const user = await this.userRepository.findOneByFilter({ id });
 
     if (!user) throw new NotFoundError("User not found");
 
     return UserDTO.toDTO(user);
   }
   async findByEmail(id: string): Promise<UserDTO> {
-    const user = await this.userRepository.findByFilter({ _id: id });
+    const user = await this.userRepository.findOneByFilter({ id });
 
     if (!user) throw new NotFoundError("User not found");
 
     return UserDTO.toDTO(user);
   }
   async findByCredentials(credentials: CredentialsDTO): Promise<UserDTO> {
-    const user = await this.userRepository.findByFilter({
-      profile: { email: credentials.email },
+    const user = await this.userRepository.findOneByFilter({
+      email: credentials.email,
     });
 
+    // no user found
     if (!user) throw new UnauthorizedError("Invalid credentials");
 
-    if (!user.security.password)
-      throw new UnauthorizedError("Invalid credentials");
+    // user won't have a password hash if signed up via SSO
+    if (!user.passwordHash) throw new UnauthorizedError("Invalid credentials");
 
-    const passwordsMatch = await bcrypt.compare(
+    const passwordsMatch = await compare(
       credentials.password,
-      user.security.password
+      user.passwordHash
     );
 
     if (!passwordsMatch) throw new UnauthorizedError("Invalid credentials");
@@ -60,55 +60,40 @@ export class UserService implements IUserService {
     return UserDTO.toDTO(user);
   }
   async create(user: CreateUserDTO): Promise<UserDTO> {
-    const userWithThisEmail = await this.userRepository.findByFilter(
-      { profile: { email: user.email } },
-      {
-        lean: true,
-      }
-    );
+    const userWithThisEmail = await this.userRepository.findOneByFilter({
+      email: user.email,
+    });
 
     if (userWithThisEmail) throw new BadRequestError("Email already taken");
 
+    const passwordHash = await hash(user.password, 10);
+
     const newUser: Partial<User> = {
-      profile: {
-        email: user.email,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        thumbnail: DEFAULT_USER_THUMBNAIL_URL,
-      },
-      security: {
-        password: await bcrypt.hash(user.password, 10),
-      },
+      email: user.email,
+      displayName: user.displayName,
+      thumbnail: DEFAULT_USER_THUMBNAIL_URL,
+      passwordHash,
     };
 
-    const newUserDoc = await this.userRepository.create(newUser);
+    const newUserEntity = await this.userRepository.create(newUser);
 
-    this.userProducer.create(newUserDoc);
+    // emit new user event to all consumer services
+    this.userProducer.create(newUserEntity);
 
-    return UserDTO.toDTO(newUserDoc);
+    return UserDTO.toDTO(newUserEntity);
   }
   async update(id: string, update: UpdateUserDTO): Promise<UserDTO> {
-    const updatedUserDoc = await this.userRepository.update(
-      id,
-      { $set: objectToDotNotation(update) },
-      {
-        new: true,
-      }
-    );
+    const updatedUserEntity = await this.userRepository.update(id, update);
 
-    if (!updatedUserDoc) throw new NotFoundError("User not found");
+    if (!updatedUserEntity) throw new NotFoundError("User not found");
 
-    this.userProducer.update(updatedUserDoc);
-
-    return UserDTO.toDTO(updatedUserDoc);
+    return UserDTO.toDTO(updatedUserEntity);
   }
-  async delete(id: string | Types.ObjectId | undefined): Promise<UserDTO> {
-    const deletedUserDoc = await this.userRepository.delete(id);
+  async delete(id: string): Promise<UserDTO> {
+    const deletedUserEntity = await this.userRepository.delete(id);
 
-    if (!deletedUserDoc) throw new NotFoundError("User not found");
+    if (!deletedUserEntity) throw new NotFoundError("User not found");
 
-    if (id) this.userProducer.delete(id);
-
-    return UserDTO.toDTO(deletedUserDoc);
+    return UserDTO.toDTO(deletedUserEntity);
   }
 }

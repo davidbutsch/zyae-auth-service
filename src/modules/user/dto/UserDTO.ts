@@ -1,47 +1,18 @@
-import {
-  BaseUserFlags,
-  BaseUserMetadata,
-  BaseUserPreferences,
-  BaseUserProfile,
-  User,
-  UserModel,
-} from "@/modules/user";
-import { IsNotEmptyObject, IsString, ValidateNested } from "class-validator";
+import { User } from "@/modules/user";
+import { IsEmail, IsString } from "class-validator";
 
-import { Type } from "class-transformer";
-
-export class UserDTO implements Omit<User, "_id" | "security"> {
+export class UserDTO implements Omit<User, "passwordHash"> {
   @IsString() id: string;
-
-  @IsNotEmptyObject()
-  @ValidateNested()
-  @Type(() => BaseUserProfile)
-  profile: BaseUserProfile;
-
-  @IsNotEmptyObject()
-  @ValidateNested()
-  @Type(() => BaseUserPreferences)
-  preferences: BaseUserPreferences;
-
-  @IsNotEmptyObject()
-  @ValidateNested()
-  @Type(() => BaseUserFlags)
-  flags: BaseUserFlags;
-
-  @IsNotEmptyObject()
-  @ValidateNested()
-  @Type(() => BaseUserMetadata)
-  metadata: BaseUserMetadata;
+  @IsString() displayName: string;
+  @IsEmail() email: string;
+  @IsString() thumbnail: string;
 
   static toDTO(domain: User): UserDTO {
-    if (domain instanceof UserModel) domain = domain.toObject();
-
     const userDTO: UserDTO = {
-      id: domain._id.toString(),
-      profile: domain.profile,
-      preferences: domain.preferences,
-      flags: domain.flags,
-      metadata: domain.metadata,
+      id: domain.id,
+      displayName: domain.displayName,
+      email: domain.email,
+      thumbnail: domain.thumbnail,
     };
 
     return userDTO;

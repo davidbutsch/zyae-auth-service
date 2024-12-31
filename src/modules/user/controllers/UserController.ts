@@ -39,7 +39,7 @@ export class UserController {
     const user = await this.userService.findById(session.userId);
 
     return {
-      data: { user },
+      user,
     };
   }
 
@@ -48,10 +48,7 @@ export class UserController {
     @QueryParam("email") email: string,
     @Res() res: Response
   ) {
-    const user = await this.userRepository.findByFilter(
-      { profile: { email } },
-      { lean: true }
-    );
+    const user = await this.userRepository.findOneByFilter({ email });
 
     if (user) return res.status(200).end();
     else return res.status(404).end();
@@ -63,11 +60,11 @@ export class UserController {
     const newUser = await this.userService.create(user);
 
     return {
-      data: { user: newUser },
+      user: newUser,
     };
   }
 
-  @UseBefore(AttachSession)
+  // @UseBefore(AttachSession)
   @Patch("/me")
   async updateMe(
     @Res() res: Response,
@@ -78,7 +75,7 @@ export class UserController {
     const user = await this.userService.update(session.userId, update);
 
     return {
-      data: { user },
+      user,
     };
   }
 
@@ -90,7 +87,7 @@ export class UserController {
     const user = await this.userService.delete(session.userId);
 
     return {
-      data: { user },
+      user,
     };
   }
 }

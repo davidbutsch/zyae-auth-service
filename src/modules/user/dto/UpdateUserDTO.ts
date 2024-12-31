@@ -1,25 +1,10 @@
-import { IsOptional, IsString, ValidateNested } from "class-validator";
+import { User } from "@/modules/user";
+import { IsEmail, IsString, IsUrl } from "class-validator";
 
-import { IsISO6391 } from "@/common";
-import { Type } from "class-transformer";
+// TODO update password method
 
-class UpdateUserProfile {
-  @IsString() firstName: string;
-  @IsOptional() @IsString() lastName?: string;
-}
-
-class UpdateUserPreferences {
-  @IsISO6391() language: string;
-}
-
-// TODO add dedicated update pass, email, thumbnail methods
-
-export class UpdateUserDTO {
-  @ValidateNested()
-  @Type(() => UpdateUserProfile)
-  profile: UpdateUserProfile;
-
-  @ValidateNested()
-  @Type(() => UpdateUserPreferences)
-  preferences: UpdateUserPreferences;
+export class UpdateUserDTO implements Omit<User, "id" | "passwordHash"> {
+  @IsString() displayName: string;
+  @IsEmail() email: string;
+  @IsUrl() thumbnail: string;
 }

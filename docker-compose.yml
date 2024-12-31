@@ -8,6 +8,7 @@ services:
     ports:
       - 8000:8000
     networks:
+      - app-network
       - redis-network
     depends_on:
       db:
@@ -17,26 +18,24 @@ services:
     image: postgres
     restart: always
     user: postgres
-    secrets:
-      - db-password
     volumes:
-      - db-data:/var/lib/postgresql/data
-    environment:
-      - POSTGRES_DB=example
-      - POSTGRES_PASSWORD_FILE=/run/secrets/db-password
-    expose:
+      - /var/lib/postgresql/data
+    env_file:
+      - .env.postgres
+    expose: # exposes postgres to other docker containers
       - 5432
+    ports: # exposes postgres to host
+      - "5432:5432"
+    networks:
+      - app-network
     healthcheck:
       test: [ "CMD", "pg_isready" ]
       interval: 10s
       timeout: 5s
       retries: 5
-volumes:
-  db-data:
-secrets:
-  db-password:
-    file: db_password.txt
 
 networks:
+  app-network:
+    driver: bridge
   redis-network:
     external: true

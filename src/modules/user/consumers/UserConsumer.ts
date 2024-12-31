@@ -1,5 +1,5 @@
-import { BaseUser, IUserRepository } from "@/modules/user";
 import { Consumer, Message, StreamKeys } from "@/common";
+import { BaseUser, IUserRepository } from "@/modules/user";
 import { container, injectable } from "tsyringe";
 
 import { plainToClass } from "class-transformer";
@@ -61,7 +61,10 @@ export class UserConsumer extends Consumer {
 
     if (errors.length > 0) throw new Error(errors.toString());
 
-    const updatedUser = await this.userRepository?.update(update._id, update);
+    const updatedUser = await this.userRepository?.update(
+      update.id || "", // not the prettiest workaround for an optional id but i don't care
+      update
+    );
 
     if (!updatedUser) throw new Error("User not found");
   }

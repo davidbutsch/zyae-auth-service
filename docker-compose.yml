@@ -1,10 +1,42 @@
 services:
-  microservice:
+  server:
+    user: root # resolve file system permission issue 
     build:
-      context: ..
-      dockerfile: ./node-microservice-template/Dockerfile
-    ports:
-      - "80:80"
-    restart: always
+      context: .
     env_file:
       - .env
+    ports:
+      - 8000:8000
+    networks:
+      - redis-network
+    depends_on:
+      db:
+        condition: service_healthy
+        
+  db:
+    image: postgres
+    restart: always
+    user: postgres
+    secrets:
+      - db-password
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=example
+      - POSTGRES_PASSWORD_FILE=/run/secrets/db-password
+    expose:
+      - 5432
+    healthcheck:
+      test: [ "CMD", "pg_isready" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+volumes:
+  db-data:
+secrets:
+  db-password:
+    file: db_password.txt
+
+networks:
+  redis-network:
+    external: true

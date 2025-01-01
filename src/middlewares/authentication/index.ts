@@ -1,1 +1,1 @@
-export * from "./AttachSession";
+export * from "./IsAuth";

@@ -4,23 +4,21 @@ import {
   QueryParam,
   QueryParams,
   Redirect,
-  Res,
+  Req,
   UnauthorizedError,
 } from "routing-controllers";
 
 import { GoogleOAuth2CallbackQuery, IOAuth2Service } from "@/modules/oauth2";
-import { ISessionService } from "@/modules/session";
 import { inject, injectable } from "tsyringe";
 
-import { SERVICE_FE_HOME_URL, sessionCookieConfig } from "@/common";
-import { Response } from "express";
+import { SERVICE_FE_HOME_URL } from "@/common";
+import { Request } from "express";
 
 @injectable()
 @JsonController("/oauth2/google")
 export class GoogleOAuth2Controller {
   constructor(
-    @inject("GoogleOAuth2Service") private googleOAuth2Service: IOAuth2Service,
-    @inject("SessionService") private sessionService: ISessionService
+    @inject("GoogleOAuth2Service") private googleOAuth2Service: IOAuth2Service
   ) {}
 
   @Get("/url")
@@ -37,7 +35,7 @@ export class GoogleOAuth2Controller {
   async callback(
     @QueryParams({ validate: { forbidNonWhitelisted: false } })
     query: GoogleOAuth2CallbackQuery,
-    @Res() res: Response
+    @Req() req: Request
   ) {
     if (query.error) throw new UnauthorizedError(query.error);
     if (!query.code) throw new UnauthorizedError("query param `code` required");
@@ -48,11 +46,7 @@ export class GoogleOAuth2Controller {
 
     const user = await this.googleOAuth2Service.createAuthProviderUser(tokens);
 
-    const session = await this.sessionService.create(user.id);
-
-    res
-      .cookie("at", session.accessToken, sessionCookieConfig)
-      .cookie("rt", session.refreshToken, sessionCookieConfig);
+    req.session.user = user;
 
     return state?.redirectUrl;
   }

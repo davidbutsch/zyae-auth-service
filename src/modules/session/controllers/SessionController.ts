@@ -1,65 +1,35 @@
-import {
-  Body,
-  CookieParam,
-  Delete,
-  JsonController,
-  Post,
-  Res,
-} from "routing-controllers";
+import { Body, Delete, JsonController, Post, Req } from "routing-controllers";
 
-import { CredentialsDTO, ISessionService } from "@/modules/session";
+import { CredentialsDTO } from "@/modules/session";
+import { IUserService } from "@/modules/user";
+import { Request } from "express";
 import { inject, injectable } from "tsyringe";
-import { Response } from "express";
-import { sessionCookieConfig } from "@/common";
 
 @injectable()
 @JsonController("/sessions")
 export class SessionController {
-  constructor(
-    @inject("SessionService") private sessionService: ISessionService
-  ) {}
+  constructor(@inject("UserService") private userService: IUserService) {}
 
   @Post("/")
-  async createSession(
-    @Res() res: Response,
-    @Body() credentials: CredentialsDTO
-  ) {
-    const newSession = await this.sessionService.createFromCredentials(
-      credentials
-    );
+  async saveSession(@Req() req: Request, @Body() credentials: CredentialsDTO) {
+    const user = await this.userService.findByCredentials(credentials);
 
-    return res
-      .cookie("at", newSession.accessToken, sessionCookieConfig)
-      .cookie("rt", newSession.refreshToken, sessionCookieConfig)
-      .status(201)
-      .json({ data: { message: "Success" } });
+    req.session.user = user;
+
+    return { message: "Success" };
   }
 
   @Delete("/")
-  async deleteSession(
-    @Res() res: Response,
-    @CookieParam("rt") refreshToken: string
-  ) {
-    await this.sessionService.deleteSessionByRefreshToken(refreshToken);
-
-    return res
-      .clearCookie("at")
-      .clearCookie("rt")
-      .json({ data: { message: "Success" } });
-  }
-
-  @Post("/tokens")
-  async createTokens(
-    @Res() res: Response,
-    @CookieParam("rt") refreshToken: string
-  ) {
-    const refreshedSession = await this.sessionService.refreshSession(
-      refreshToken
+  async deleteSession(@Req() req: Request) {
+    // TODO refactor to service layer
+    // promisify req.session.destroy
+    await new Promise<void>((resolve, reject) =>
+      req.session.destroy((error) => {
+        if (error) reject(error);
+        else resolve();
+      })
     );
 
-    return res
-      .cookie("at", refreshedSession.accessToken, sessionCookieConfig)
-      .cookie("rt", refreshedSession.refreshToken, sessionCookieConfig)
-      .json({ data: { message: "Success" } });
+    return { message: "Success" };
   }
 }

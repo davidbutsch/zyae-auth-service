@@ -14,6 +14,7 @@ const keys = [
   "REDIS_PASS",
   "GOOGLE_CLIENT_ID",
   "GOOGLE_CLIENT_SECRET",
+  "COOKIE_SECRET",
 ] as const; // const assert creates readonly "tuple" array
 type Key = (typeof keys)[number];
 export type EnvKeys = Record<Key, string>;

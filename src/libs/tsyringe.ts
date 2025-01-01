@@ -1,16 +1,4 @@
-import {
-  ClassConstructor,
-  IocAdapter,
-  useContainer,
-} from "routing-controllers";
-import { DependencyContainer, container } from "tsyringe";
 import { GoogleOAuth2Service, IOAuth2Service } from "@/modules/oauth2";
-import {
-  ISessionRepository,
-  ISessionService,
-  SessionRepository,
-  SessionService,
-} from "@/modules/session";
 import {
   IUserRepository,
   IUserService,
@@ -19,6 +7,12 @@ import {
   UserRepository,
   UserService,
 } from "@/modules/user";
+import {
+  ClassConstructor,
+  IocAdapter,
+  useContainer,
+} from "routing-controllers";
+import { DependencyContainer, container } from "tsyringe";
 
 class TsyringeAdapter implements IocAdapter {
   constructor(private readonly TsyringeContainer: DependencyContainer) {}
@@ -34,12 +28,6 @@ container.register<IUserService>("UserService", {
 });
 container.register<IUserRepository>("UserRepository", {
   useClass: UserRepository,
-});
-container.register<ISessionService>("SessionService", {
-  useClass: SessionService,
-});
-container.register<ISessionRepository>("SessionRepository", {
-  useClass: SessionRepository,
 });
 container.register<IOAuth2Service>("GoogleOAuth2Service", {
   useClass: GoogleOAuth2Service,

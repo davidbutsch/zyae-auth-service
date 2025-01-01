@@ -8,13 +8,14 @@ import {
   Patch,
   Post,
   QueryParam,
+  Req,
   Res,
   UseBefore,
 } from "routing-controllers";
 
-import { Response } from "express";
+import { Request, Response } from "express";
 
-import { AttachSession } from "@/middlewares";
+import { IsAuth } from "@/middlewares";
 import {
   CreateUserDTO,
   IUserRepository,
@@ -31,12 +32,10 @@ export class UserController {
     @inject("UserRepository") private userRepository: IUserRepository
   ) {}
 
-  @UseBefore(AttachSession)
+  @UseBefore(IsAuth)
   @Get("/me")
-  async getMe(@Res() res: Response) {
-    const session = res.locals.session;
-
-    const user = await this.userService.findById(session.userId);
+  async getMe(@Req() req: Request) {
+    const user = req.session.user!; // IsAuth middleware checks if session.user is defined
 
     return {
       user,
@@ -64,30 +63,41 @@ export class UserController {
     };
   }
 
-  // @UseBefore(AttachSession)
+  @UseBefore(IsAuth)
   @Patch("/me")
   async updateMe(
-    @Res() res: Response,
+    @Req() req: Request,
     @Body({ validate: { skipMissingProperties: true } }) update: UpdateUserDTO
   ) {
-    const session = res.locals.session;
+    const userId = req.session.user!.id; // IsAuth
 
-    const user = await this.userService.update(session.userId, update);
+    const user = await this.userService.update(userId, update);
+
+    req.session.user = user; // update user in session store
 
     return {
       user,
     };
   }
 
-  @UseBefore(AttachSession)
+  @UseBefore(IsAuth)
   @Delete("/me")
-  async deleteMe(@Res() res: Response) {
-    const session = res.locals.session;
+  async deleteMe(@Req() req: Request) {
+    const userId = req.session.user!.id;
 
-    const user = await this.userService.delete(session.userId);
+    await this.userService.delete(userId);
+
+    // TODO refactor to service layer
+    // promisify req.session.destroy
+    await new Promise<void>((resolve, reject) =>
+      req.session.destroy((error) => {
+        if (error) reject(error);
+        else resolve();
+      })
+    );
 
     return {
-      user,
+      message: "Successful",
     };
   }
 }
